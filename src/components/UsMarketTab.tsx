@@ -174,8 +174,8 @@ export function UsMarketTab() {
           if (pairs.length === 0 && etfTickers.length === 0) return null;
 
           // 현물(=F 아닌 것) / 선물(=F or .future 사용) 분리
-          const cashPairs = pairs.filter(p => !p.symbol.endsWith("=F"));
-          const futurePairs: { symbol: string; name: string; desc?: string }[] = [];
+          let cashPairs = pairs.filter(p => !p.symbol.endsWith("=F"));
+          let futurePairs: { symbol: string; name: string; desc?: string }[] = [];
           for (const p of pairs) {
             if (p.symbol.endsWith("=F")) {
               futurePairs.push({ symbol: p.symbol, name: p.name, desc: p.desc });
@@ -190,7 +190,7 @@ export function UsMarketTab() {
 
           return (
             <div key={sectorKey}
-                 className={`grid grid-cols-[80px_1fr_1fr_1fr] gap-2 p-2
+                 className={`grid grid-cols-[80px_1fr_1fr] gap-2 p-2
                              border-b border-gray-100 last:border-b-0
                              items-start
                              ${sectorIdx % 2 === 1 ? "bg-gray-50/70" : ""}`}>
@@ -199,7 +199,7 @@ export function UsMarketTab() {
                 <span className="mr-1">{SECTOR_EMOJI[sectorKey] ?? "📊"}</span>
                 {sectorKey}
               </div>
-              {/* 컬럼 1: 현물 (선행지수 등) */}
+              {/* 컬럼 1: 현물 + 선물 (미국 관련) */}
               <div className="flex flex-wrap gap-1">
                 {cashPairs.map(p => {
                   const q = usMap?.get(p.symbol);
@@ -211,9 +211,6 @@ export function UsMarketTab() {
                       bold={p.tier === "T1"} sleeping={sleeping} />
                   );
                 })}
-              </div>
-              {/* 컬럼 2: 선물 */}
-              <div className="flex flex-wrap gap-1">
                 {futurePairs.map(f => {
                   const q = usMap?.get(f.symbol);
                   const sleeping = isSymbolSleeping(f.symbol);
@@ -225,7 +222,7 @@ export function UsMarketTab() {
                   );
                 })}
               </div>
-              {/* 컬럼 3: KR ETF */}
+              {/* 컬럼 2: KR ETF (한국 관련) */}
               <div className="flex flex-wrap gap-1">
                 {etfTickers.map(t => {
                   const p: Price | undefined = krMap.get(t);

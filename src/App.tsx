@@ -22,9 +22,7 @@ import type { Stock } from "./types";
 // 기본 폴링 — 공개 4-way: 10초 / 전용 프록시 사용 시: localStorage 설정값 (5/10/30/60초)
 // 다운 시 자동 증가 (base × (1 + downCount))
 
-// 카카오페이 송금받기 링크 (모바일/카카오톡 deep link)
-const KAKAOPAY_URL = "https://qr.kakaopay.com/FCscirjeF";
-const QR_IMG_URL = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(KAKAOPAY_URL)}`;
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,7 +42,7 @@ function Dashboard() {
   const [reloadKey, setReloadKey] = useState(0);
   const [valuationTicker, setValuationTicker] = useState<string | null>(null);
   const [editing, setEditing] = useState<Stock | null>(null);
-  const [donateOpen, setDonateOpen] = useState(false);
+
   // 설정 변경 시 reloadKey 증가 → BASE_REFRESH_MS / usePersonalProxy 재계산
   const BASE_REFRESH_MS = useMemo(() => getEffectivePollMs(), [reloadKey]);
   const usePersonalProxy = useMemo(() => !!getPersonalProxyUrl(), [reloadKey]);
@@ -186,15 +184,7 @@ function Dashboard() {
                          text-white rounded text-sm">
               🔍 검색
             </button>
-            <button
-              onClick={() => setDonateOpen(true)}
-              title="개발자 후원하기 (카카오페이)"
-              className="px-2 py-1 rounded text-xs flex items-center gap-1
-                         text-gray-400 opacity-60 hover:opacity-100
-                         hover:text-gray-600 transition">
-              <span className="opacity-50">☕</span>
-              <span className="hidden sm:inline">개발자 후원하기</span>
-            </button>
+
             <button
               onClick={() => setSettingsOpen(true)}
               className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200
@@ -289,41 +279,7 @@ function Dashboard() {
         onChanged={() => setReloadKey(k => k + 1)}
       />
 
-      {donateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center
-                         bg-black/40 p-4"
-             onClick={() => setDonateOpen(false)}>
-          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6
-                           text-center"
-               onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-1">☕ 후원해주셔서 감사합니다</h2>
-            <p className="text-xs text-gray-500 mb-4">
-              Cloudflare Worker 비용에 보태집니다
-            </p>
-            <div className="bg-[#FEE500] rounded-lg p-4 inline-block mb-3">
-              <img src={QR_IMG_URL} alt="카카오페이 QR" width={200} height={200}
-                   className="block mx-auto" />
-            </div>
-            <p className="text-xs text-gray-600 mb-1">
-              📱 <strong>카카오톡 앱</strong>의 QR 스캔이 가장 빠릅니다
-            </p>
-            <p className="text-[11px] text-gray-400 mb-3">
-              카메라/토스로 스캔 시 카카오톡으로 자동 이동
-            </p>
-            <a href={KAKAOPAY_URL}
-               target="_blank" rel="noopener noreferrer"
-               className="block px-4 py-2 rounded font-bold text-[#191919]
-                          hover:brightness-95"
-               style={{ backgroundColor: "#FEE500" }}>
-              모바일에서 직접 열기
-            </a>
-            <button onClick={() => setDonateOpen(false)}
-                    className="mt-3 text-sm text-gray-500 hover:text-gray-700">
-              닫기
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {valuationTicker && (() => {
         const s = holdings.find(h => h.ticker === valuationTicker);

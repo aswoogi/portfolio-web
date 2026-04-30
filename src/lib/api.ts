@@ -2,19 +2,10 @@ import type { Price, Investor, Consensus } from "../types";
 import { reportProxySuccess, reportProxyFailure, isProxyDown } from "./proxyStatus";
 import { getPersonalProxyUrl } from "./proxyConfig";
 
-// 공개 4-way 라운드 로빈 (Cloudflare + Vercel + Deno + Render)
-const PUBLIC_PROXY_URLS: string[] = [
-  import.meta.env.VITE_PROXY_URL,
-  import.meta.env.VITE_PROXY_URL_2,
-  import.meta.env.VITE_PROXY_URL_3,
-  import.meta.env.VITE_PROXY_URL_4,
-].filter(Boolean) as string[];
-if (PUBLIC_PROXY_URLS.length === 0) PUBLIC_PROXY_URLS.push("http://localhost:8787");
-
-// 런타임 — 사용자 전용 URL 있으면 그것만 사용, 없으면 공개 4-way
+// 오직 사용자 전용 개인 프록시 URL만 사용합니다.
 export function getProxyUrls(): string[] {
   const personal = getPersonalProxyUrl();
-  return personal ? [personal] : PUBLIC_PROXY_URLS;
+  return personal ? [personal] : [];
 }
 
 // 호환용 — UI/통계 표시 (현재 활성 list)
@@ -35,6 +26,9 @@ function buildProxyUrl(base: string, targetUrl: string): string {
 // 자동 fallback — 건강한 proxy 우선 + 실패 시 다른 proxy로 재시도
 export async function fetchProxied(targetUrl: string): Promise<Response> {
   const urls = getProxyUrls();
+  if (urls.length === 0) {
+    throw new Error("개인 프록시 주소가 설정되지 않았습니다. 설정(⚙️) 메뉴에서 전용 프록시 주소를 등록해주세요.");
+  }
   // 건강(=down 아님) 우선, down은 후순위. 그 안에서는 랜덤 (부하 분산)
   const healthy = urls.filter(u => !isProxyDown(u))
                       .sort(() => Math.random() - 0.5);
